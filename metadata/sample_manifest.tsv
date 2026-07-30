@@ -1,0 +1,25 @@
+capture_area_id	barcode	patient	subtype	matrix	msi_target	st_available	filtered_h5_available	spatial_directory_available	msi_available	msi_bw_available	msi_he_available	morphology_available	svdj_raw_available	in_metadata_short	include_main_analysis	used_fig1	used_fig2	used_fig3	exclusion_reason	notes
+V13F27-402_A1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V13F27-402_B1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V13F27-402_C1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V13F27-402_D1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V13Y10-038_A1	bc2051	4	LumB	9-AA	metabolites	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-038_B1	bc2059	5	LumB	9-AA	metabolites	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-038_C1	bc2067	3	LumA	9-AA	metabolites	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-038_D1	bc2075	7	LumB HER2+	9-AA	metabolites	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-060_A1	bc2091	4	LumB	DHB	lipids	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-060_B1	bc2004	5	LumB	DHB	lipids	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-060_C1	bc2012	3	LumA	DHB	lipids	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-060_D1	bc2020	7	LumB HER2+	DHB	lipids	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-061_A1	bc2019	4	LumB	no_matrix	no_molecule	yes	yes	yes	no	no	no	yes	yes	yes						
+V13Y10-061_B1	bc2027	5	LumB	no_matrix	no_molecule	yes	yes	yes	no	no	no	yes	yes	yes						
+V13Y10-061_C1	bc2035	3	LumA	no_matrix	no_molecule	yes	yes	yes	no	no	no	yes	yes	yes						
+V13Y10-061_D1	bc2043	7	LumB HER2+	no_matrix	no_molecule	yes	yes	yes	no	no	no	yes	yes	yes						
+V13Y10-062_A1	bc2028	4	LumB	CHCA	peptides	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-062_B1	bc2036	5	LumB	CHCA	peptides	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V13Y10-062_C1	bc2044	3	LumA	CHCA	peptides	yes	yes	yes	yes	yes	yes	no	yes	yes						
+V13Y10-062_D1	bc2052	7	LumB HER2+	CHCA	peptides	yes	yes	yes	yes	yes	yes	yes	yes	yes						
+V14F07-397_A1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V14F07-397_B1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V14F07-397_C1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv
+V14F07-397_D1						yes	yes	yes	no	no	no	no	no	no						Space Ranger data present but absent from metadata_short.tsv

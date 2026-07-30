@@ -1,0 +1,17 @@
+capture_area_id	matrix	MSI target	barcode	patient	subtype
+V13Y10-061_A1	no_matrix	no_molecule	bc2019	4	LumB
+V13Y10-061_B1	no_matrix	no_molecule	bc2027	5	LumB
+V13Y10-061_C1	no_matrix	no_molecule	bc2035	3	LumA
+V13Y10-061_D1	no_matrix	no_molecule	bc2043	7	LumB HER2+
+V13Y10-038_A1	9-AA	metabolites	bc2051	4	LumB
+V13Y10-038_B1	9-AA	metabolites	bc2059	5	LumB
+V13Y10-038_C1	9-AA	metabolites	bc2067	3	LumA
+V13Y10-038_D1	9-AA	metabolites	bc2075	7	LumB HER2+
+V13Y10-060_A1	DHB	lipids	bc2091	4	LumB
+V13Y10-060_B1	DHB	lipids	bc2004	5	LumB
+V13Y10-060_C1	DHB	lipids	bc2012	3	LumA
+V13Y10-060_D1	DHB	lipids	bc2020	7	LumB HER2+
+V13Y10-062_A1	CHCA	peptides	bc2028	4	LumB
+V13Y10-062_B1	CHCA	peptides	bc2036	5	LumB
+V13Y10-062_C1	CHCA	peptides	bc2044	3	LumA
+V13Y10-062_D1	CHCA	peptides	bc2052	7	LumB HER2+

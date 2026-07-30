@@ -1,0 +1,30 @@
+mz	category	reason
+137.023740	dhba_nmf_informed_v2	recurrent DHBA technical/adduct-family peak; weak [M+K] prolyl-like annotation; top-loading across bc2004/bc2020 factors
+154.026444	dhba_nmf_informed_v2	recurrent DHBA technical/adduct-family peak; weak [M+K] annotation; top-loading across multiple DHBA factors
+155.034275	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+162.112830	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears in technical-looking DHBA factors
+176.008326	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears with 273/137/154 family
+177.016186	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+192.990058	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+198.998023	dhba_nmf_informed_v2	recurrent DHBA adduct-like/odd annotation peak; appears with DHBA technical family
+214.971958	dhba_nmf_informed_v2	recurrent chloromaleylacetate-like [M+Na] adduct; paired with 230.945767
+230.945767	dhba_nmf_informed_v2	recurrent chloromaleylacetate-like [M+K] adduct; paired with 214.971958
+273.039404	dhba_nmf_informed_v2	dominant recurrent DHBA technical-family peak; quinalizarin-like annotation; top-loading across multiple factors and both DHBA sections
+274.039564	dhba_nmf_informed_v2	companion/isotope-like feature near dominant 273.039404 DHBA family
+274.042623	dhba_nmf_informed_v2	companion/isotope-like feature near dominant 273.039404 DHBA family
+290.042016	dhba_nmf_informed_v2	recurrent DHBA companion peak paired with 291.049940
+291.049940	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; repeatedly top-loading with 273/137 family
+307.043705	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+313.031628	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; repeatedly top-loading across DHBA factors
+323.102492	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+329.005607	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears in technical-looking DHBA factors
+329.026509	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+345.000393	dhba_conservative	Original conservative DHBA matrix/adduct blacklist entry
+348.069951	dhba_nmf_informed_v2	recurrent DHBA weak/adduct-like peak; appears with technical family
+353.024103	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears across DHBA factors
+375.005921	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears with DHBA technical family
+390.979561	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears with DHBA technical family
+406.953603	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears with chlorinated/adduct-like DHBA family
+439.065167	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears in technical-looking factors
+566.986999	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears with DHBA technical family
+582.960960	dhba_nmf_informed_v2	recurrent DHBA no-hit companion peak; appears with DHBA technical family

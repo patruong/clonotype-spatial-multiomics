@@ -1,0 +1,120 @@
+# ============================================================
+# Project data
+# Keep directory structure, documentation and example manifests
+# ============================================================
+
+data/**
+!data/
+!data/**/
+!data/**/.gitkeep
+!data/README.md
+!data/manifest.example.tsv
+
+# ============================================================
+# Generated results
+# ============================================================
+
+results/**
+!results/
+!results/**/
+!results/**/.gitkeep
+!results/README.md
+
+# ============================================================
+# Local and sensitive configuration
+# ============================================================
+
+config/*.local.yaml
+config/*.local.yml
+config/*.local.tsv
+config/paths.local.yaml
+config/samples.local.tsv
+
+.env
+.env.*
+!.env.example
+
+# ============================================================
+# Nextflow
+# ============================================================
+
+work/
+.nextflow/
+.nextflow.log*
+.nextflow-history
+trace*.txt
+timeline*.html
+report*.html
+dag*.html
+dag*.svg
+
+# ============================================================
+# Conda, Mamba and virtual environments
+# ============================================================
+
+.conda/
+conda-env/
+env/
+venv/
+.venv/
+
+# ============================================================
+# Python
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ============================================================
+# R and renv
+# Commit renv.lock, .Rprofile and renv/activate.R
+# ============================================================
+
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+**/renv/library/
+**/renv/staging/
+**/renv/python/
+**/renv/local/
+
+# ============================================================
+# Temporary files and logs
+# ============================================================
+
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+nohup.out
+
+# ============================================================
+# Operating systems and editors
+# ============================================================
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated workflow state
+.snakemake/
+
+# Editable pip checkout created from igdiscover.yml
+envs/conda/src/
+
+# Local setup log
+log.txt
