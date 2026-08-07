@@ -42,6 +42,13 @@ CONDITION_ORDER = (
     "peptide",
 )
 
+# Manuscript-panel typography
+TITLE_FONTSIZE = 19
+LABEL_FONTSIZE = 16
+TICK_FONTSIZE = 14
+LEGEND_FONTSIZE = 14
+LEGEND_TITLE_FONTSIZE = 14
+
 
 def normalize_condition(value: str) -> str:
     value = (
@@ -513,14 +520,26 @@ def draw_grouped_panel(
             color=patient_colors[patient],
         )
 
-    axis.set_title(title)
-    axis.set_ylabel(ylabel)
+    axis.set_title(
+        title,
+        fontsize=TITLE_FONTSIZE,
+    )
+    axis.set_ylabel(
+        ylabel,
+        fontsize=LABEL_FONTSIZE,
+    )
 
     axis.set_xticks(group_centres)
     axis.set_xticklabels(
         CONDITION_ORDER,
         rotation=20,
         ha="right",
+        fontsize=TICK_FONTSIZE,
+    )
+
+    axis.tick_params(
+        axis="y",
+        labelsize=TICK_FONTSIZE,
     )
 
     axis.grid(
@@ -542,7 +561,7 @@ def save_individual_panel(
     patient_colors: dict[str, object],
 ) -> None:
     figure, axis = plt.subplots(
-        figsize=(5.2, 3.8)
+        figsize=(6.4, 4.6)
     )
 
     draw_grouped_panel(
@@ -558,6 +577,8 @@ def save_individual_panel(
         title="Patient",
         frameon=False,
         ncol=2,
+        fontsize=LEGEND_FONTSIZE,
+        title_fontsize=LEGEND_TITLE_FONTSIZE,
     )
 
     figure.tight_layout()
@@ -628,7 +649,7 @@ def plot_qc(table: pd.DataFrame) -> None:
     figure, axes = plt.subplots(
         2,
         2,
-        figsize=(10.5, 7.5),
+        figsize=(12.5, 9.0),
     )
 
     for axis, panel in zip(axes.flat, panels):
@@ -663,6 +684,8 @@ def plot_qc(table: pd.DataFrame) -> None:
         frameon=False,
         loc="upper center",
         ncol=len(labels),
+        fontsize=LEGEND_FONTSIZE,
+        title_fontsize=LEGEND_TITLE_FONTSIZE,
     )
 
     figure.tight_layout(

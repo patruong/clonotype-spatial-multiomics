@@ -1,0 +1,40 @@
+name: sma-vdj-python
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip
+
+  # Core scientific Python
+  - numpy=1.26
+  - pandas=2.2
+  - scipy=1.13
+
+  # Plotting
+  - matplotlib=3.9
+
+  # Statistics / machine learning
+  - scikit-learn
+  - statsmodels
+
+  # Matrix and data formats
+  - h5py
+  - openpyxl
+
+  # Single-cell / spatial data structures
+  - anndata
+  - scanpy
+
+  # Graph / spatial analysis
+  - networkx
+
+  # Utilities
+  - pyyaml
+  - tqdm
+
+  # Packages not reliably available from conda-forge
+  - pip:
+      - olga==1.2.4
+      - venn==0.1.3
