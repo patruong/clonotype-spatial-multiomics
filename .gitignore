@@ -118,3 +118,4 @@ envs/conda/src/
 
 # Local setup log
 log.txt
+envs/conda/src/NLSDeconv/

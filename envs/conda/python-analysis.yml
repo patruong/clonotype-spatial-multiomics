@@ -34,6 +34,10 @@ dependencies:
   - pyyaml
   - tqdm
 
+# NLSDeconv
+- pytorch::pytorch=2.0.1
+- pytorch::cpuonly
+
   # Packages not reliably available from conda-forge
   - pip:
       - olga==1.2.4
