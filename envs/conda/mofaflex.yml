@@ -10,6 +10,9 @@ dependencies:
   - python=3.11
   - pip
   - pip:
+      - numpy==2.3.1
+      - pandas==2.3.3
+      - scipy==1.16.3
       - mofaflex==0.1.0.post1
       - torch==2.5.1
       - anndata==0.12.6
