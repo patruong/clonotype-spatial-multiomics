@@ -1,0 +1,16 @@
+name: sma-vdj-mofaflex
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - mofaflex==0.1.0.post1
+      - torch==2.5.1
+      - anndata==0.12.6
+      - scanpy==1.11.5

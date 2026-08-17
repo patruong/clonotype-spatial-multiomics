@@ -1,0 +1,80 @@
+anndata==0.12.6
+array-api-compat==1.12.0
+brotlicffi @ file:///home/task_176295012226420/conda-bld/brotlicffi_1762950227973/work
+certifi @ file:///home/task_175978569463913/conda-bld/certifi_1759786098575/work/certifi
+cffi @ file:///home/task_176183215235376/conda-bld/cffi_1761832773734/work
+charset-normalizer @ file:///home/task_176174480956840/conda-bld/charset-normalizer_1761744822896/work
+contourpy==1.3.3
+crc32c==2.8
+cycler==0.12.1
+donfig==0.8.1.post1
+dtw-python==1.7.2
+filelock @ file:///home/task_176241979116072/conda-bld/filelock_1762419845875/work
+fonttools==4.60.1
+fsspec==2025.10.0
+gmpy2 @ file:///croot/gmpy2_1738085463648/work
+gpytorch==1.14.2
+h5py==3.15.1
+idna @ file:///home/task_176191178300919/conda-bld/idna_1761911982343/work
+jaxtyping==0.3.3
+Jinja2 @ file:///croot/jinja2_1741710844255/work
+joblib==1.5.2
+kiwisolver==1.4.9
+legacy-api-wrap==1.5
+linear-operator==0.6
+llvmlite==0.45.1
+MarkupSafe @ file:///croot/markupsafe_1738584038848/work
+matplotlib==3.10.7
+mizani==0.14.3
+mkl-service==2.4.0
+mkl_fft @ file:///io/mkl313/mkl_fft_1730824109137/work
+mkl_random @ file:///io/mkl313/mkl_random_1730823916628/work
+mofaflex==0.1.0.post1
+mpmath @ file:///croot/mpmath_1690848262763/work
+mudata==0.3.2
+mudatasets==0.0.2
+muon==0.1.7
+natsort==8.4.0
+networkx @ file:///croot/networkx_1756709277056/work
+numba==0.62.1
+numcodecs==0.16.3
+numpy @ file:///croot/numpy_and_numpy_base_1750883793662/work/dist/numpy-2.3.1-cp311-cp311-linux_x86_64.whl#sha256=c8bcc7beca4cb3ebc0a7c134fc9b65c59470bf940fe31737dc591c1db5e173e2
+opt_einsum==3.4.0
+packaging==25.0
+pandas==2.3.3
+patsy==1.0.2
+pillow @ file:///home/task_176252754139500/conda-bld/pillow_1762528238884/work
+platformdirs==4.5.0
+plotnine==0.15.1
+protobuf==6.33.0
+pycparser @ file:///home/task_175749606196006/conda-bld/pycparser_1757496076770/work
+pynndescent==0.5.13
+pyparsing==3.2.5
+pyro-api==0.1.2
+pyro-ppl==1.9.1
+PySocks @ file:///home/task_176175228059944/conda-bld/pysocks_1761753009523/work
+python-dateutil==2.9.0.post0
+pytz==2025.2
+PyYAML @ file:///croot/pyyaml_1728657952215/work
+requests @ file:///home/task_176235919505742/conda-bld/requests_1762359593170/work
+scanpy==1.11.5
+scikit-learn==1.7.2
+scikit-misc==0.5.2
+scipy==1.16.3
+seaborn==0.13.2
+session-info2==0.2.3
+six==1.17.0
+statsmodels==0.14.5
+sympy==1.13.1
+threadpoolctl==3.6.0
+torch==2.5.1
+torchaudio==2.5.1
+torchvision==0.20.1
+tqdm==4.67.1
+triton==3.1.0
+typing_extensions @ file:///croot/typing_extensions_1756280817316/work
+tzdata==2025.2
+umap-learn==0.5.9.post2
+urllib3 @ file:///croot/urllib3_1750775463400/work
+wadler_lindig==0.1.7
+zarr==3.1.3
