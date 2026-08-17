@@ -173,6 +173,35 @@ run_receptor "Ig" "$BCR_DB"
 run_receptor "TCR" "$TCR_DB"
 
 # =============================================================================
+# Canonicalize clonotype IDs
+# =============================================================================
+#
+# IgDiscover clonotype IDs are sequential enumeration labels and can change
+# between otherwise biologically identical runs. Canonicalization derives a
+# stable sequence-based UID, deterministically renumbers clonotypes, and
+# regenerates the spatial count matrices.
+#
+# The original IgDiscover ID is retained as clone_id_igdiscover.
+
+echo "Canonicalizing clonotype IDs..."
+
+CANONICALIZER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/2_canonicalize_clonotype_ids.py"
+CANON_DIR="${WORK_DIR}/canonical_tmp"
+
+rm -rf "$CANON_DIR"
+
+python "$CANONICALIZER" \
+    --input-dir "$WORK_DIR/final" \
+    --output-dir "$CANON_DIR"
+
+# Replace only canonicalized products; leave other IgDiscover final outputs
+# untouched.
+cp -f "$CANON_DIR"/* "$WORK_DIR/final"/
+rm -rf "$CANON_DIR"
+
+echo "Canonical clonotype IDs written."
+
+# =============================================================================
 # Validate all expected native outputs
 # =============================================================================
 
