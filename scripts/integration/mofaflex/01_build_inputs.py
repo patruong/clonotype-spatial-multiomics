@@ -33,7 +33,7 @@ VDJ
   - TCR row-wise L2 normalization only if >=20 retained features
   - merge BCR and TCR into one VDJ view with BCR__/TCR__ prefixes
 
-Only 9AA/DHBA metabolite/lipid sections are built. CHCA/peptide sections are excluded.
+Control, 9AA and DHBA sections are built. Control sections contain ST+VDJ only; 9AA/DHBA sections contain ST+MSI+VDJ. CHCA/peptide sections are excluded.
 """
 
 from __future__ import annotations
@@ -436,21 +436,30 @@ def matrix_label(row: pd.Series) -> str:
     matrix = str(row.get("matrix", "")).upper().replace("-", "").replace("_", "")
     target = str(row.get("MSI target", "")).lower()
 
+    if "NOMATRIX" in matrix or "no_molecule" in target or "control" in target:
+        return "CONTROL"
+
     if "9AA" in matrix or "9AMINO" in matrix or "metabolite" in target:
         return "9AA"
 
     if "DHBA" in matrix or "DHB" in matrix or "lipid" in target:
         return "DHBA"
 
+    if "CHCA" in matrix or "peptide" in target:
+        return "CHCA"
+
     return "UNKNOWN"
 
 
 def select_figure2_sections(metadata: pd.DataFrame) -> pd.DataFrame:
-    keep = metadata.apply(lambda row: matrix_label(row) in {"9AA", "DHBA"}, axis=1)
+    keep = metadata.apply(
+        lambda row: matrix_label(row) in {"CONTROL", "9AA", "DHBA"},
+        axis=1,
+    )
     out = metadata.loc[keep].copy()
 
     if out.empty:
-        raise RuntimeError("No 9AA/DHBA sections found in metadata.")
+        raise RuntimeError("No control/9AA/DHBA Figure 2 sections found in metadata.")
 
     return out
 
@@ -583,85 +592,108 @@ def build_section(
     # MSI
     # --------------------------------------------------------------
 
-    msi_path = args.msi_root / capture
-    if not msi_path.exists():
-        raise FileNotFoundError(
-            f"Required MSI input missing for Figure 2 section {sample}: {msi_path}"
+    # Control/no-matrix sections have no MSI measurement and therefore
+    # enter MOFA-FLEX with ST + VDJ only.
+    msi_path = None
+    msi_on_st = None
+    msi_features = np.asarray([], dtype=object)
+    blacklist_removed = np.asarray([], dtype=bool)
+
+    if matrix in {"9AA", "DHBA"}:
+        msi_path = args.msi_root / capture
+
+        if not msi_path.exists():
+            raise FileNotFoundError(
+                f"Required MSI input missing for Figure 2 section {sample}: {msi_path}"
+            )
+
+        msi = read_msi(msi_path)
+        x_msi = dense_float32(msi.X)
+
+        peak_count = (x_msi > MSI_DETECT_EPS).sum(axis=1)
+        msi_spot_keep = peak_count >= MSI_MIN_PEAKS_PER_SPOT
+
+        msi = msi[msi_spot_keep].copy()
+        x_msi = x_msi[msi_spot_keep, :]
+
+        if msi.n_obs == 0:
+            raise RuntimeError(f"{sample}: all MSI spots failed MSI QC.")
+
+        msi_features = np.asarray(msi.var_names, dtype=object)
+
+        x_msi, msi_features, blacklist_removed = filter_msi_blacklist(
+            x_msi,
+            msi_features,
+            blacklists[matrix],
+            MSI_BLACKLIST_PPM,
         )
 
-    msi = read_msi(msi_path)
-    x_msi = dense_float32(msi.X)
+        x_msi, msi_features = filter_by_presence(
+            x_msi,
+            msi_features,
+            MSI_MIN_FEATURE_SPOTS,
+            MSI_DETECT_EPS,
+        )
 
-    peak_count = (x_msi > MSI_DETECT_EPS).sum(axis=1)
-    msi_spot_keep = peak_count >= MSI_MIN_PEAKS_PER_SPOT
+        detection = (x_msi > MSI_DETECT_EPS).mean(axis=0)
+        detection_keep = detection >= MSI_MIN_DETECTION_FRACTION
 
-    msi = msi[msi_spot_keep].copy()
-    x_msi = x_msi[msi_spot_keep, :]
+        x_msi = x_msi[:, detection_keep]
+        msi_features = msi_features[detection_keep]
 
-    if msi.n_obs == 0:
-        raise RuntimeError(f"{sample}: all MSI spots failed MSI QC.")
+        if x_msi.shape[1] == 0:
+            raise RuntimeError(f"{sample}: MSI filtering retained zero features.")
 
-    msi_features = np.asarray(msi.var_names, dtype=object)
+        tmp = ad.AnnData(X=x_msi.copy())
+        tmp.var_names = pd.Index(msi_features.astype(str))
+        tmp.var_names_make_unique()
 
-    x_msi, msi_features, blacklist_removed = filter_msi_blacklist(
-        x_msi,
-        msi_features,
-        blacklists[matrix],
-        MSI_BLACKLIST_PPM,
-    )
+        sc.pp.highly_variable_genes(
+            tmp,
+            flavor="seurat_v3",
+            n_top_genes=min(MSI_N_HVG, tmp.n_vars),
+        )
 
-    x_msi, msi_features = filter_by_presence(
-        x_msi,
-        msi_features,
-        MSI_MIN_FEATURE_SPOTS,
-        MSI_DETECT_EPS,
-    )
+        hvg = tmp.var["highly_variable"].to_numpy(dtype=bool)
 
-    detection = (x_msi > MSI_DETECT_EPS).mean(axis=0)
-    detection_keep = detection >= MSI_MIN_DETECTION_FRACTION
+        if hvg.any():
+            x_msi = x_msi[:, hvg]
+            msi_features = msi_features[hvg]
 
-    x_msi = x_msi[:, detection_keep]
-    msi_features = msi_features[detection_keep]
+        x_msi_coord = pd.to_numeric(
+            msi.obs["pxl_col_in_fullres"], errors="coerce"
+        ).to_numpy(dtype=float)
 
-    if x_msi.shape[1] == 0:
-        raise RuntimeError(f"{sample}: MSI filtering retained zero features.")
+        y_msi_coord = pd.to_numeric(
+            msi.obs["pxl_row_in_fullres"], errors="coerce"
+        ).to_numpy(dtype=float)
 
-    tmp = ad.AnnData(X=x_msi.copy())
-    tmp.var_names = pd.Index(msi_features.astype(str))
-    tmp.var_names_make_unique()
+        coords_msi = np.column_stack(
+            [x_msi_coord, y_msi_coord]
+        ).astype(np.float32)
 
-    sc.pp.highly_variable_genes(
-        tmp,
-        flavor="seurat_v3",
-        n_top_genes=min(MSI_N_HVG, tmp.n_vars),
-    )
+        if not np.isfinite(coords_msi).all():
+            raise RuntimeError(f"{sample}: non-finite MSI pixel coordinates.")
 
-    hvg = tmp.var["highly_variable"].to_numpy(dtype=bool)
+        msi_on_st = knn_impute(
+            x_msi,
+            coords_msi,
+            coords_st,
+        )
 
-    if hvg.any():
-        x_msi = x_msi[:, hvg]
-        msi_features = msi_features[hvg]
+        print(
+            f"MSI: {msi.n_obs} retained MSI spots; "
+            f"{x_msi.shape[1]} features; "
+            f"{int(blacklist_removed.sum())} blacklist features removed"
+        )
 
-    x_msi_coord = pd.to_numeric(
-        msi.obs["pxl_col_in_fullres"], errors="coerce"
-    ).to_numpy(dtype=float)
+    elif matrix == "CONTROL":
+        print("MSI: none (control/no-matrix section)")
 
-    y_msi_coord = pd.to_numeric(
-        msi.obs["pxl_row_in_fullres"], errors="coerce"
-    ).to_numpy(dtype=float)
-
-    coords_msi = np.column_stack([x_msi_coord, y_msi_coord]).astype(np.float32)
-
-    if not np.isfinite(coords_msi).all():
-        raise RuntimeError(f"{sample}: non-finite MSI pixel coordinates.")
-
-    msi_on_st = knn_impute(x_msi, coords_msi, coords_st)
-
-    print(
-        f"MSI: {msi.n_obs} retained MSI spots; "
-        f"{x_msi.shape[1]} features; "
-        f"{int(blacklist_removed.sum())} blacklist features removed"
-    )
+    else:
+        raise RuntimeError(
+            f"{sample}: unsupported Figure 2 matrix label {matrix!r}"
+        )
 
     # --------------------------------------------------------------
     # VDJ
@@ -753,14 +785,23 @@ def build_section(
     st_out.obsm["spatial"] = coords_st
     st_out.write_h5ad(out_dir / "ST.h5ad", convert_strings_to_categoricals=False)
 
-    msi_out = ad.AnnData(
-        X=msi_on_st.astype(np.float32),
-        obs=obs.copy(),
-        var=pd.DataFrame(index=pd.Index(np.asarray(msi_features, dtype=object), dtype=object)),
-    )
-    msi_out.var_names_make_unique()
-    msi_out.obsm["spatial"] = coords_st
-    msi_out.write_h5ad(out_dir / "MSI.h5ad", convert_strings_to_categoricals=False)
+    if msi_on_st is not None:
+        msi_out = ad.AnnData(
+            X=msi_on_st.astype(np.float32),
+            obs=obs.copy(),
+            var=pd.DataFrame(
+                index=pd.Index(
+                    np.asarray(msi_features, dtype=object),
+                    dtype=object,
+                )
+            ),
+        )
+        msi_out.var_names_make_unique()
+        msi_out.obsm["spatial"] = coords_st
+        msi_out.write_h5ad(
+            out_dir / "MSI.h5ad",
+            convert_strings_to_categoricals=False,
+        )
 
     vdj_out = ad.AnnData(
         X=vdj_model.astype(np.float32),
@@ -783,15 +824,21 @@ def build_section(
         "msi_target": str(row.get("MSI target", "")),
         "paths": {
             "st": str(st_path),
-            "msi": str(msi_path),
+            "msi": str(msi_path) if msi_path is not None else None,
             "vdj": str(args.vdj_root),
             "pathology": str(pathology_file),
-            "blacklist": str(args.blacklist_9aa if matrix == "9AA" else args.blacklist_dhba),
+            "blacklist": (
+                str(args.blacklist_9aa)
+                if matrix == "9AA"
+                else str(args.blacklist_dhba)
+                if matrix == "DHBA"
+                else None
+            ),
         },
         "dimensions": {
             "n_st_spots": int(st_model.shape[0]),
             "n_st_genes": int(st_model.shape[1]),
-            "n_msi_features": int(msi_on_st.shape[1]),
+            "n_msi_features": int(msi_on_st.shape[1]) if msi_on_st is not None else 0,
             "n_vdj_features": int(vdj_model.shape[1]),
             "n_bcr_features": int(vdj_stats.get("n_bcr", 0)),
             "n_tcr_features": int(vdj_stats.get("n_tcr", 0)),
@@ -827,7 +874,7 @@ def build_section(
         "matrix": matrix,
         "n_st_spots": st_model.shape[0],
         "n_st_genes": st_model.shape[1],
-        "n_msi_features": msi_on_st.shape[1],
+        "n_msi_features": msi_on_st.shape[1] if msi_on_st is not None else 0,
         "n_vdj_features": vdj_model.shape[1],
         "n_bcr_features": vdj_stats.get("n_bcr", 0),
         "n_tcr_features": vdj_stats.get("n_tcr", 0),
@@ -920,7 +967,7 @@ def main():
         missing = wanted - set(metadata["barcode"].astype(str))
         if missing:
             raise RuntimeError(
-                f"Requested samples are not eligible 9AA/DHBA sections: {sorted(missing)}"
+                f"Requested samples are not eligible control/9AA/DHBA sections: {sorted(missing)}"
             )
 
     blacklists = {
