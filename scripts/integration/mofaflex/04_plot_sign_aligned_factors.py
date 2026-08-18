@@ -234,6 +234,30 @@ def symmetric_limit(values, percentile=99.0):
     return vmax
 
 
+
+def flip_spatial_context_horizontal(context):
+    """
+    Flip hires image and spatial coordinates horizontally.
+    """
+    image = context["image"]
+    coords = np.asarray(
+        context["coords"],
+        dtype=float,
+    ).copy()
+
+    _, W = image.shape[:2]
+
+    image_flip = np.fliplr(image)
+
+    coords[:, 0] = (W - 1) - coords[:, 0]
+
+    return {
+        "image": image_flip,
+        "coords": coords,
+        "spot_diameter": context["spot_diameter"],
+    }
+
+
 def rotate_spatial_context(context, direction="cw"):
     """
     Rotate hires image and spatial coordinates together by 90 degrees.
@@ -271,9 +295,16 @@ def rotate_spatial_context(context, direction="cw"):
         x_rot = y
         y_rot = (W - 1) - x
 
+    elif direction == "180":
+        # 180-degree rotation; CW and CCW are equivalent.
+        image_rot = np.rot90(image, k=2)
+
+        x_rot = (W - 1) - x
+        y_rot = (H - 1) - y
+
     else:
         raise ValueError(
-            "direction must be 'cw', 'ccw', or 'none'"
+            "direction must be 'cw', 'ccw', '180', or 'none'"
         )
 
     return {
@@ -382,11 +413,19 @@ def write_spatial_pair(
     title,
     shared_scale=False,
     right_rotation="cw",
+    right_flip_horizontal=False,
     crop_padding=0.03,
     spot_size_scale=0.035,
 ):
+    right_context_plot = right_context
+
+    if right_flip_horizontal:
+        right_context_plot = flip_spatial_context_horizontal(
+            right_context_plot
+        )
+
     right_context_plot = rotate_spatial_context(
-        right_context,
+        right_context_plot,
         direction=right_rotation,
     )
 
@@ -411,7 +450,7 @@ def write_spatial_pair(
     fig, axes = plt.subplots(
         1,
         2,
-        figsize=(8.0, 4.3),
+        figsize=(8.8, 4.3),
     )
 
     left_scatter = plot_spatial(
@@ -462,7 +501,7 @@ def write_spatial_pair(
         right=0.99,
         bottom=0.01,
         top=0.90,
-        wspace=0.12,
+        wspace=0.20,
     )
 
     fig.savefig(
@@ -861,11 +900,20 @@ def main():
 
     parser.add_argument(
         "--right-rotation",
-        choices=["cw", "ccw", "none"],
+        choices=["cw", "ccw", "180", "none"],
         default="cw",
         help=(
             "Rotate the right/DHBA tissue image and coordinates "
             "before plotting. Default: 90 degrees clockwise."
+        ),
+    )
+
+    parser.add_argument(
+        "--right-flip-horizontal",
+        action="store_true",
+        help=(
+            "Horizontally flip the right-section image and "
+            "coordinates before applying right-section rotation."
         ),
     )
 
@@ -1069,6 +1117,7 @@ def main():
             ),
             shared_scale=args.shared_pair_scale,
             right_rotation=args.right_rotation,
+            right_flip_horizontal=args.right_flip_horizontal,
             crop_padding=args.crop_padding,
             spot_size_scale=args.spot_size_scale,
         )
