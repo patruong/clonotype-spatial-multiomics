@@ -234,16 +234,79 @@ def symmetric_limit(values, percentile=99.0):
     return vmax
 
 
-def plot_spatial(ax, context, values, title, vmax):
+def rotate_spatial_context(context, direction="cw"):
+    """
+    Rotate hires image and spatial coordinates together by 90 degrees.
+
+    Coordinates use image convention:
+        x = column
+        y = row
+    """
+
+    if direction == "none":
+        return context
+
     image = context["image"]
-    coords = context["coords"]
+    coords = np.asarray(
+        context["coords"],
+        dtype=float,
+    ).copy()
 
     H, W = image.shape[:2]
 
-    # Approximate spot display size from Space Ranger scale factors.
-    s = (context["spot_diameter"] ** 2) * 1.6e-2
+    x = coords[:, 0]
+    y = coords[:, 1]
 
-    ax.imshow(image, origin="upper")
+    if direction == "cw":
+        # np.rot90(..., k=3)
+        image_rot = np.rot90(image, k=3)
+
+        x_rot = (H - 1) - y
+        y_rot = x
+
+    elif direction == "ccw":
+        # np.rot90(..., k=1)
+        image_rot = np.rot90(image, k=1)
+
+        x_rot = y
+        y_rot = (W - 1) - x
+
+    else:
+        raise ValueError(
+            "direction must be 'cw', 'ccw', or 'none'"
+        )
+
+    return {
+        "image": image_rot,
+        "coords": np.column_stack(
+            [x_rot, y_rot]
+        ),
+        "spot_diameter": context["spot_diameter"],
+    }
+
+
+def plot_spatial(
+    ax,
+    context,
+    values,
+    title,
+    vmax,
+    crop_padding=0.03,
+    spot_size_scale=0.035,
+):
+    image = context["image"]
+    coords = np.asarray(
+        context["coords"],
+        dtype=float,
+    )
+
+    # Approximate displayed spot size from Space Ranger scale factors.
+    s = (context["spot_diameter"] ** 2) * spot_size_scale
+
+    ax.imshow(
+        image,
+        origin="upper",
+    )
 
     sca = ax.scatter(
         coords[:, 0],
@@ -257,13 +320,55 @@ def plot_spatial(ax, context, values, title, vmax):
         alpha=0.98,
     )
 
-    ax.set_xlim(0, W)
-    ax.set_ylim(H, 0)
+    # ------------------------------------------------------------
+    # Tight tissue crop
+    # ------------------------------------------------------------
+
+    xmin = float(np.nanmin(coords[:, 0]))
+    xmax = float(np.nanmax(coords[:, 0]))
+    ymin = float(np.nanmin(coords[:, 1]))
+    ymax = float(np.nanmax(coords[:, 1]))
+
+    dx = max(xmax - xmin, 1.0)
+    dy = max(ymax - ymin, 1.0)
+
+    # Small fractional margin, but never less than roughly one spot.
+    xpad = max(
+        dx * crop_padding,
+        context["spot_diameter"],
+    )
+
+    ypad = max(
+        dy * crop_padding,
+        context["spot_diameter"],
+    )
+
+    ax.set_xlim(
+        xmin - xpad,
+        xmax + xpad,
+    )
+
+    # Image coordinates have y increasing downward.
+    ax.set_ylim(
+        ymax + ypad,
+        ymin - ypad,
+    )
+
+    ax.set_aspect("equal")
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title(title, fontsize=9)
+
+    # Remove visible frame for Illustrator-ready panel.
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    ax.set_title(
+        title,
+        fontsize=9,
+    )
 
     return sca
+
 
 
 def write_spatial_pair(
@@ -276,7 +381,15 @@ def write_spatial_pair(
     right_title,
     title,
     shared_scale=False,
+    right_rotation="cw",
+    crop_padding=0.03,
+    spot_size_scale=0.035,
 ):
+    right_context_plot = rotate_spatial_context(
+        right_context,
+        direction=right_rotation,
+    )
+
     if shared_scale:
         vmax = symmetric_limit(
             np.concatenate(
@@ -285,14 +398,20 @@ def write_spatial_pair(
         )
         vmax_left = vmax
         vmax_right = vmax
+
     else:
-        vmax_left = symmetric_limit(left_values)
-        vmax_right = symmetric_limit(right_values)
+        vmax_left = symmetric_limit(
+            left_values
+        )
+
+        vmax_right = symmetric_limit(
+            right_values
+        )
 
     fig, axes = plt.subplots(
         1,
         2,
-        figsize=(9.5, 4.5),
+        figsize=(8.0, 4.3),
     )
 
     left_scatter = plot_spatial(
@@ -301,46 +420,66 @@ def write_spatial_pair(
         left_values,
         left_title,
         vmax_left,
+        crop_padding=crop_padding,
+        spot_size_scale=spot_size_scale,
     )
 
     right_scatter = plot_spatial(
         axes[1],
-        right_context,
+        right_context_plot,
         right_values,
         right_title,
         vmax_right,
+        crop_padding=crop_padding,
+        spot_size_scale=spot_size_scale,
     )
 
     fig.colorbar(
         left_scatter,
         ax=axes[0],
-        fraction=0.046,
-        pad=0.02,
+        fraction=0.035,
+        pad=0.015,
         label="factor score",
     )
 
     fig.colorbar(
         right_scatter,
         ax=axes[1],
-        fraction=0.046,
-        pad=0.02,
+        fraction=0.035,
+        pad=0.015,
         label="sign-aligned factor score",
     )
 
-    fig.suptitle(title, fontsize=10)
-    fig.tight_layout()
+    fig.suptitle(
+        title,
+        fontsize=10,
+        y=0.985,
+    )
+
+    # Keep adjacent sections close together.
+    fig.subplots_adjust(
+        left=0.01,
+        right=0.99,
+        bottom=0.01,
+        top=0.90,
+        wspace=0.12,
+    )
 
     fig.savefig(
         out_base.with_suffix(".png"),
         dpi=300,
+        bbox_inches="tight",
+        pad_inches=0.01,
     )
 
     fig.savefig(
         out_base.with_suffix(".pdf"),
         bbox_inches="tight",
+        pad_inches=0.01,
     )
 
     plt.close(fig)
+
 
 
 def top_loadings(
@@ -366,79 +505,264 @@ def top_loadings(
 
     aligned = raw * float(sign)
 
-    order = np.argsort(
-        -np.abs(aligned)
-    )[:top_n]
+    positive_idx = np.flatnonzero(
+        aligned > 0
+    )
+
+    negative_idx = np.flatnonzero(
+        aligned < 0
+    )
+
+    # Strongest positive loadings first.
+    positive_idx = positive_idx[
+        np.argsort(
+            -aligned[positive_idx]
+        )
+    ][:top_n]
+
+    # Most negative loadings first.
+    negative_idx = negative_idx[
+        np.argsort(
+            aligned[negative_idx]
+        )
+    ][:top_n]
 
     rows = []
 
-    for rank, j in enumerate(order, start=1):
-        rows.append(
-            {
-                "side": side,
-                "sample": sample,
-                "view": view,
-                "factor": factor,
-                "factor_idx": factor_idx,
-                "sign_applied": int(sign),
-                "rank": rank,
-                "feature": str(features[j]),
-                "raw_loading": float(raw[j]),
-                "aligned_loading": float(aligned[j]),
-                "abs_aligned_loading": float(
-                    abs(aligned[j])
-                ),
-                "direction_after_alignment": (
-                    "positive"
-                    if aligned[j] >= 0
-                    else "negative"
-                ),
-            }
-        )
+    for pole, indices in (
+        ("positive", positive_idx),
+        ("negative", negative_idx),
+    ):
+        for rank, j in enumerate(
+            indices,
+            start=1,
+        ):
+            rows.append(
+                {
+                    "side": side,
+                    "sample": sample,
+                    "view": view,
+                    "factor": factor,
+                    "factor_idx": factor_idx,
+                    "sign_applied": int(sign),
+                    "pole": pole,
+                    "rank": rank,
+                    "feature": str(features[j]),
+                    "raw_loading": float(raw[j]),
+                    "aligned_loading": float(aligned[j]),
+                    "abs_aligned_loading": float(
+                        abs(aligned[j])
+                    ),
+                    "direction_after_alignment": pole,
+                }
+            )
 
     return rows
 
 
-def plot_loading_rows(rows, out_base, title):
+
+def plot_loading_rows(
+    rows,
+    out_base,
+    title,
+):
     if not rows:
         return
 
-    df = pd.DataFrame(rows).sort_values(
-        "aligned_loading",
-        ascending=True,
+    df = pd.DataFrame(rows)
+
+    positive = (
+        df[df["aligned_loading"] > 0]
+        .sort_values(
+            "aligned_loading",
+            ascending=False,
+        )
+        .copy()
     )
 
-    values = df["aligned_loading"].to_numpy()
-    labels = df["feature"].astype(str).tolist()
+    negative = (
+        df[df["aligned_loading"] < 0]
+        .sort_values(
+            "aligned_loading",
+            ascending=True,
+        )
+        .copy()
+    )
+
+    if positive.empty and negative.empty:
+        return
+
+    max_abs = max(
+        positive["aligned_loading"].abs().max()
+        if not positive.empty
+        else 0.0,
+        negative["aligned_loading"].abs().max()
+        if not negative.empty
+        else 0.0,
+    )
+
+    if not np.isfinite(max_abs) or max_abs <= 0:
+        max_abs = 1.0
+
+    max_abs *= 1.06
+
+    n_rows = max(
+        len(positive),
+        len(negative),
+        1,
+    )
 
     fig_h = max(
         3.2,
-        0.22 * len(df) + 1.2,
+        0.31 * n_rows + 1.45,
     )
 
-    fig, ax = plt.subplots(
-        figsize=(7.5, fig_h)
+    fig, (ax_pos, ax_neg) = plt.subplots(
+        1,
+        2,
+        figsize=(5.0, fig_h),
+        gridspec_kw={
+            "wspace": 0.18,
+        },
     )
 
-    y = np.arange(len(df))
+    # ------------------------------------------------------------
+    # Positive pole: LEFT
+    # ------------------------------------------------------------
 
-    ax.barh(y, values)
-    ax.set_yticks(y)
-    ax.set_yticklabels(labels, fontsize=7)
-    ax.axvline(0, linewidth=0.8)
-    ax.set_xlabel("sign-aligned loading")
-    ax.set_title(title, fontsize=9)
+    if not positive.empty:
+        y = np.arange(
+            len(positive)
+        )
 
-    fig.tight_layout()
+        ax_pos.barh(
+            y,
+            positive["aligned_loading"],
+            color="#2f62ad",
+            edgecolor="none",
+        )
+
+        ax_pos.set_yticks(y)
+
+        ax_pos.set_yticklabels(
+            positive["feature"].astype(str),
+            fontsize=8,
+        )
+
+        ax_pos.invert_yaxis()
+
+    ax_pos.set_xlim(
+        0,
+        max_abs,
+    )
+
+    ax_pos.set_title(
+        "Positive pole",
+        fontsize=9,
+        fontweight="bold",
+        color="#2f62ad",
+    )
+
+    ax_pos.set_xlabel(
+        "Loading",
+        fontsize=9,
+    )
+
+    # ------------------------------------------------------------
+    # Negative pole: RIGHT
+    # ------------------------------------------------------------
+
+    if not negative.empty:
+        y = np.arange(
+            len(negative)
+        )
+
+        ax_neg.barh(
+            y,
+            negative["aligned_loading"],
+            color="#e53935",
+            edgecolor="none",
+        )
+
+        ax_neg.set_yticks(y)
+
+        ax_neg.set_yticklabels(
+            negative["feature"].astype(str),
+            fontsize=8,
+        )
+
+        ax_neg.invert_yaxis()
+
+    ax_neg.set_xlim(
+        -max_abs,
+        0,
+    )
+
+    ax_neg.yaxis.tick_right()
+    ax_neg.yaxis.set_label_position(
+        "right"
+    )
+
+    ax_neg.set_title(
+        "Negative pole",
+        fontsize=9,
+        fontweight="bold",
+        color="#e53935",
+    )
+
+    ax_neg.set_xlabel(
+        "Loading",
+        fontsize=9,
+    )
+
+    # Clean manuscript-style axes.
+    for ax in (ax_pos, ax_neg):
+        ax.spines["top"].set_visible(False)
+
+        ax.tick_params(
+            axis="x",
+            labelsize=8,
+        )
+
+        ax.tick_params(
+            axis="y",
+            length=0,
+        )
+
+    ax_pos.spines["right"].set_visible(
+        False
+    )
+
+    ax_neg.spines["left"].set_visible(
+        False
+    )
+
+    fig.suptitle(
+        title,
+        fontsize=10,
+        fontweight="bold",
+        y=0.995,
+    )
+
+    fig.subplots_adjust(
+        left=0.16,
+        right=0.84,
+        bottom=0.10,
+        top=0.88,
+        wspace=0.18,
+    )
 
     fig.savefig(
         out_base.with_suffix(".png"),
         dpi=300,
+        bbox_inches="tight",
+        pad_inches=0.02,
     )
 
     fig.savefig(
         out_base.with_suffix(".pdf"),
         bbox_inches="tight",
+        pad_inches=0.02,
     )
 
     plt.close(fig)
@@ -533,6 +857,36 @@ def main():
     parser.add_argument(
         "--shared-pair-scale",
         action="store_true",
+    )
+
+    parser.add_argument(
+        "--right-rotation",
+        choices=["cw", "ccw", "none"],
+        default="cw",
+        help=(
+            "Rotate the right/DHBA tissue image and coordinates "
+            "before plotting. Default: 90 degrees clockwise."
+        ),
+    )
+
+    parser.add_argument(
+        "--crop-padding",
+        type=float,
+        default=0.03,
+        help=(
+            "Fractional padding around retained spatial spots. "
+            "Default: 0.03."
+        ),
+    )
+
+    parser.add_argument(
+        "--spot-size-scale",
+        type=float,
+        default=0.035,
+        help=(
+            "Matplotlib spot area scale relative to Space Ranger "
+            "spot diameter squared. Default: 0.035."
+        ),
     )
 
     args = parser.parse_args()
@@ -714,6 +1068,9 @@ def main():
                 f"r={corr:+.3f} | {flip_label}"
             ),
             shared_scale=args.shared_pair_scale,
+            right_rotation=args.right_rotation,
+            crop_padding=args.crop_padding,
+            spot_size_scale=args.spot_size_scale,
         )
 
         pd.DataFrame(
