@@ -1,0 +1,21 @@
+name: sma-vdj-st-cnv
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11.15
+  - numpy=2.4.6
+  - pandas=2.3.3
+  - scipy=1.17.1
+  - anndata=0.12.16
+  - scanpy=1.11.5
+  - scikit-learn=1.9.0
+  - python-igraph=1.0.0
+  - leidenalg=0.12.0
+  - matplotlib
+  - r-base=4.5.3
+  - bioconductor-infercnv=1.26.0
+  - r-seurat=5.5.0
+  - r-matrix=1.7_5
+  - r-igraph=2.3.2
+  - r-reticulate=1.46.0

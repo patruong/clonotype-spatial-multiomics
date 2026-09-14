@@ -1,0 +1,78 @@
+resolution: "0.70"
+mode: noHMM
+smoothing_window: 51
+
+sections:
+  bc2075:
+    capture: V13Y10-038_D1
+    type: 9AA
+  bc2020:
+    capture: V13Y10-060_D1
+    type: DHBA
+  bc2043:
+    capture: V13Y10-061_D1
+    type: control
+
+section_order:
+  - bc2075
+  - bc2020
+  - bc2043
+
+cnv_families:
+  bc2075:
+    "0": CNV-A-like
+    "1": CNV-B family
+    "2": CNV-C
+    "3": CNV-B family
+  bc2020:
+    "0": CNV-B family
+    "1": CNV-B family
+    "2": CNV-C
+    "3": CNV-A
+  bc2043:
+    "0": CNV-B family
+    "1": CNV-C/other
+    "2": CNV-A
+    "3": CNV-C
+
+row_order:
+  - bc2075_L0
+  - bc2020_L3
+  - bc2043_L2
+  - bc2020_L0
+  - bc2020_L1
+  - bc2075_L1
+  - bc2075_L3
+  - bc2043_L0
+  - bc2075_L2
+  - bc2020_L2
+  - bc2043_L3
+  - bc2043_L1
+
+discretization:
+  moderate:
+    loss: -0.75
+    gain: 0.75
+    high_gain: 1.75
+  strict:
+    loss: -1.25
+    gain: 1.25
+    high_gain: 2.25
+
+medicc2:
+  version: "1.1.2"
+  normal_name: synthetic_normal
+  normal_total_cn: 2
+  max_cn: 4
+  allow_wgd: false
+  n_cores: 8
+
+figure3_bcr_lineage:
+  clone_uid: IGH_6185ccc0b86b9060c2dba52c6521d66b122d21c9946563df98c36cc0f673a7a7
+  clone_id: 9953
+  historical_igdiscover_id: 14280
+  sections:
+    - bc2043
+    - bc2075
+    - bc2020
+  productive_only: true
